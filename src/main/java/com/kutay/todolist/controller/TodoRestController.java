@@ -3,6 +3,8 @@ package com.kutay.todolist.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.kutay.todolist.DTO.TodoRequestDTO;
+import com.kutay.todolist.DTO.TodoResponseDTO;
 import com.kutay.todolist.model.Todo;
 import com.kutay.todolist.service.TodoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +19,8 @@ public class TodoRestController {
 
 
 
-    private TodoService todoService;
-    private ObjectMapper objectMapper;
+    private final TodoService todoService;
+    private final ObjectMapper objectMapper;
 
 
     @Autowired
@@ -28,47 +30,48 @@ public class TodoRestController {
     }
 
     @GetMapping("/todos")
-    public List<Todo> getTodos(){
+    public List<TodoResponseDTO> getTodos(){
         return todoService.findAll();
     }
 
     @GetMapping("/todos/{todoId}")
-    public Todo getTodo(@PathVariable long todoId){
+    public TodoResponseDTO getTodo(@PathVariable long todoId){
         return todoService.findById(todoId);
     }
 
     @GetMapping("/todos/completed")
-    public List<Todo> getCompletedTodos(){
+    public List<TodoResponseDTO> getCompletedTodos(){
         return todoService.getCompleted();
     }
 
     @GetMapping("/todos/uncompleted")
-    public List<Todo> getUncompletedTodos(){
+    public List<TodoResponseDTO> getUncompletedTodos(){
         return todoService.getUncompleted();
     }
 
     @GetMapping("/todos/search")
-    public List<Todo> searchByTitle(@RequestParam String title) {
+    public List<TodoResponseDTO> searchByTitle(@RequestParam String title) {
         return todoService.searchByTitle(title);
     }
 
     @PostMapping("/todos")
-    public Todo addTodo(@RequestBody Todo todo){
+    public TodoResponseDTO addTodo(@RequestBody TodoRequestDTO todo){
 
-        todo.setId(null);
+
+
         System.out.println(todo);
         return todoService.save(todo);
     }
 
     @PutMapping("/todos")
-    public Todo updateTodo(@RequestBody Todo todo){
-
+    public TodoResponseDTO updateTodo(@RequestBody TodoRequestDTO todo){
         return todoService.save(todo);
     }
 
     @PatchMapping("/todos/{todoId}")
-    public Todo patchTodo(@PathVariable Long todoId, @RequestBody Map<String, Object> patchPayload){
-        Todo tempTodo = todoService.findById(todoId);
+    public TodoResponseDTO patchTodo(@PathVariable Long todoId, @RequestBody Map<String, Object> patchPayload){
+        // get the Todo who is going to be updated
+        TodoResponseDTO tempTodo = todoService.findById(todoId);
 
         if (tempTodo == null){
             throw new RuntimeException("Todo not found");
@@ -78,15 +81,16 @@ public class TodoRestController {
             throw new RuntimeException("Todo id not allowed in patch requests");
         }
 
-        Todo patchedTodo = apply(patchPayload,tempTodo);
+        // apply the changes to Todo
+        TodoResponseDTO patchedTodo = apply(patchPayload,tempTodo);
 
-        Todo dbTodo = todoService.save(patchedTodo);
+        TodoResponseDTO dbTodo = todoService.save(new TodoRequestDTO(patchedTodo.completed(), patchedTodo.description(), patchedTodo.title()));
 
         return dbTodo;
 
     }
 
-    private Todo apply(Map<String, Object> patchPayload, Todo tempTodo) {
+    private TodoResponseDTO apply(Map<String, Object> patchPayload, TodoResponseDTO tempTodo) {
 
         ObjectNode todoNode = objectMapper.convertValue(tempTodo, ObjectNode.class);
 
@@ -97,7 +101,7 @@ public class TodoRestController {
 
 
 
-        return objectMapper.convertValue(todoNode, Todo.class);
+        return objectMapper.convertValue(todoNode, TodoResponseDTO.class);
 
     }
 

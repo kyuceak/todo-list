@@ -1,5 +1,7 @@
 package com.kutay.todolist.service;
 
+import com.kutay.todolist.DTO.TodoRequestDTO;
+import com.kutay.todolist.DTO.TodoResponseDTO;
 import com.kutay.todolist.model.Todo;
 import com.kutay.todolist.repository.TodoRepository;
 import jakarta.transaction.Transactional;
@@ -14,7 +16,7 @@ import java.util.Optional;
 public class TodoServiceImpl implements TodoService{
 
 
-    private TodoRepository todoRepository;
+    private final TodoRepository todoRepository;
 
 
     @Autowired
@@ -25,19 +27,38 @@ public class TodoServiceImpl implements TodoService{
 
 
     @Override
-    public List<Todo> findAll() {
+    public List<TodoResponseDTO> findAll() {
 
-        return todoRepository.findAll();
+
+
+        return todoRepository.findAll()
+                .stream()
+                .map(todo -> new TodoResponseDTO(
+                        todo.getId(),
+                        todo.isCompleted(),
+                        todo.getDescription(),
+                        todo.getTitle()))
+                .toList();
     }
 
     @Override
     @Transactional
-    public Todo save(Todo todo) {
-       return todoRepository.save(todo);
+    public TodoResponseDTO save(TodoRequestDTO dto) {
+
+        Todo todo = new Todo();
+
+        todo.setTitle(dto.title());
+        todo.setDescription(dto.description());
+        todo.setCompleted(dto.completed());
+
+        Todo saved = todoRepository.save(todo);
+
+
+       return new TodoResponseDTO(saved.getId(),saved.isCompleted(),saved.getDescription(), saved.getTitle());
     }
 
     @Override
-    public Todo findById(Long id) {
+    public TodoResponseDTO findById(Long id) {
 
         Optional<Todo> result = todoRepository.findById(id);
 
@@ -49,7 +70,7 @@ public class TodoServiceImpl implements TodoService{
             throw new RuntimeException("cant find the employee.");
         }
 
-        return todo;
+        return new TodoResponseDTO(todo.getId(), todo.isCompleted(),todo.getDescription(),todo.getTitle());
     }
 
     @Override
@@ -59,18 +80,35 @@ public class TodoServiceImpl implements TodoService{
     }
 
     @Override
-    public List<Todo> searchByTitle(String title) {
-        return todoRepository.findAllByTitle(title);
+    public List<TodoResponseDTO> searchByTitle(String title) {
+
+        return todoRepository.findAllByTitle(title)
+                .stream()
+                .map(todo -> new TodoResponseDTO(
+                        todo.getId(),
+                        todo.isCompleted(),
+                        todo.getDescription(),
+                        todo.getTitle())).toList();
     }
 
 
     @Override
-    public List<Todo> getCompleted() {
-        return todoRepository.fetchAllCompleted();
+    public List<TodoResponseDTO> getCompleted() {
+        return todoRepository.fetchAllCompleted().stream()
+                .map(todo -> new TodoResponseDTO(
+                        todo.getId(),
+                        todo.isCompleted(),
+                        todo.getDescription(),
+                        todo.getTitle())).toList();
     }
 
     @Override
-    public List<Todo> getUncompleted() {
-        return todoRepository.fetchAllunCompleted();
+    public List<TodoResponseDTO> getUncompleted() {
+        return todoRepository.fetchAllunCompleted().stream()
+                .map(todo -> new TodoResponseDTO(
+                        todo.getId(),
+                        todo.isCompleted(),
+                        todo.getDescription(),
+                        todo.getTitle())).toList();
     }
 }
