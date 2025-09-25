@@ -1,5 +1,7 @@
 package com.kutay.todolist.service;
 
+import com.kutay.todolist.DTO.TodoRequestDTO;
+import com.kutay.todolist.DTO.TodoResponseDTO;
 import com.kutay.todolist.model.Todo;
 
 import java.util.List;
@@ -7,12 +9,12 @@ import java.util.List;
 public interface TodoService {
 
 
-    List<Todo> findAll();
-    Todo save(Todo todo);
-    Todo findById(Long id);
+    List<TodoResponseDTO> findAll();
+    TodoResponseDTO save(TodoRequestDTO dto);
+    TodoResponseDTO findById(Long id);
     void deleteById(Long id);
-    List<Todo> searchByTitle(String title);
-    List<Todo> getCompleted();
-    List<Todo> getUncompleted();
+    List<TodoResponseDTO> searchByTitle(String title);
+    List<TodoResponseDTO> getCompleted();
+    List<TodoResponseDTO> getUncompleted();
 
 }
