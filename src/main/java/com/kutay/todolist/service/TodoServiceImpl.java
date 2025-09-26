@@ -2,6 +2,7 @@ package com.kutay.todolist.service;
 
 import com.kutay.todolist.DTO.TodoRequestDTO;
 import com.kutay.todolist.DTO.TodoResponseDTO;
+import com.kutay.todolist.exception.todo.TodoNotFoundException;
 import com.kutay.todolist.model.Todo;
 import com.kutay.todolist.repository.TodoRepository;
 import jakarta.transaction.Transactional;
@@ -67,7 +68,7 @@ public class TodoServiceImpl implements TodoService{
         if(result.isPresent()){
            todo = result.get();
         }else {
-            throw new RuntimeException("cant find the employee.");
+            throw new TodoNotFoundException("Todo not found with given id " + id);
         }
 
         return new TodoResponseDTO(todo.getId(), todo.isCompleted(),todo.getDescription(),todo.getTitle());
